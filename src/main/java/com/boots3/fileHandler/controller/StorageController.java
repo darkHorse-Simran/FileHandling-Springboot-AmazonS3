@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,8 +17,9 @@ import com.boots3.fileHandler.service.StorageService;
 
 
 @RestController
-@RequestMapping("/storage")
+@RequestMapping("/file")
 public class StorageController {
+	
 	 @Autowired
 	    private StorageService service;
 
@@ -43,6 +45,16 @@ public class StorageController {
 	                    .header("Content-type", "application/octet-stream")
 	                    .header("Content-disposition", "attachment; filename=\"" + fileName + "\"")
 	                    .body(resource);
+	    	} else {
+	    		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	    	}        
+	    }
+	    @DeleteMapping("/delete/{bucketName}/{fileName}")
+	    public ResponseEntity<String> deleteFile(@PathVariable("bucketName") String bucketName, @PathVariable("fileName") String fileName) {
+	    	if(service.isBucketValid(bucketName)) {
+	    		System.out.println("File deleted successfully");
+	    		return new ResponseEntity<>(service.deleteFile(bucketName, fileName), HttpStatus.OK);
+	    		
 	    	} else {
 	    		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	    	}        

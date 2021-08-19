@@ -25,9 +25,6 @@ public class StorageService {
 	@Value("${cloud.aws.credentials.endpointUrl}")
 	private String endpointUrl;
 
-	@Value("${application.bucket.name}")
-	private String bucketName;
-
 	@Autowired
 	private AmazonS3 s3Client;
 
@@ -35,7 +32,7 @@ public class StorageService {
 		return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
 	}
 
-	private void uploadFileTos3bucket(String fileName, File file) {
+	private void uploadFileTos3bucket(String bucketName, String fileName, File file) {
 		s3Client.putObject(
 				new PutObjectRequest(bucketName, fileName, file).withCannedAcl(CannedAccessControlList.PublicRead));
 	}
@@ -46,7 +43,7 @@ public class StorageService {
 			File file = convertMultiPartFileToFile(multipartFile);
 			String fileName = generateFileName(multipartFile);
 			fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
-			 uploadFileTos3bucket(fileName, file); 
+			 uploadFileTos3bucket(bucketName,fileName, file); 
 			 file.delete();
         System.out.println("File uploaded: " + fileName);
 		} catch (Exception e) {
@@ -55,7 +52,15 @@ public class StorageService {
 		return fileUrl;
     }
 
-	
+		public String deleteFile(String bucketName, String fileName) {
+    	
+    	if(s3Client.doesObjectExist(bucketName, fileName)) {
+    		s3Client.deleteObject(bucketName, fileName);
+            return fileName + " deleted successfully";
+    	}
+        return "File does not exist";
+    }
+
 	private File convertMultiPartFileToFile(MultipartFile file) {
 		File convertedFile = new File(file.getOriginalFilename());
 		try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
