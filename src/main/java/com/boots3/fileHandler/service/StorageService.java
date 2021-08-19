@@ -46,8 +46,6 @@ public class StorageService {
 			File file = convertMultiPartFileToFile(multipartFile);
 			String fileName = generateFileName(multipartFile);
 			fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
-        //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
-        //fileObj.delete();
 			 uploadFileTos3bucket(fileName, file); 
 			 file.delete();
         System.out.println("File uploaded: " + fileName);
@@ -63,7 +61,6 @@ public class StorageService {
 		try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
 			fos.write(file.getBytes());
 		} catch (IOException e) {
-			// log.error("Error converting multipartFile to file", e);
 			e.printStackTrace();
 		}
 		return convertedFile;
