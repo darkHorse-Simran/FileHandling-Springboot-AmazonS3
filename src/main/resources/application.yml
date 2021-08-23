@@ -11,7 +11,7 @@ cloud:
 
 application:
   bucket:
-    name: 
+    name: testbucketforfileupload 
 
 
 spring:

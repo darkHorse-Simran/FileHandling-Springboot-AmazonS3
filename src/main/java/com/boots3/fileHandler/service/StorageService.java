@@ -11,10 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.SetBucketVersioningConfigurationRequest;
 import com.amazonaws.util.IOUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -32,24 +36,32 @@ public class StorageService {
 		return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
 	}
 
-	private void uploadFileTos3bucket(String bucketName, String fileName, File file) {
+	public void uploadFileTos3bucket(String bucketName, String fileName, File file) {
 		s3Client.putObject(
 				new PutObjectRequest(bucketName, fileName, file).withCannedAcl(CannedAccessControlList.PublicRead));
 	}
 
+	//uploading object
+    public PutObjectResult putObject(String bucketName, String key, File file) {
+        return s3Client.putObject(bucketName, key, file);
+    }
 	public String uploadFile(String bucketName, MultipartFile multipartFile) {
-		String fileUrl = "";
-		try {
-			File file = convertMultiPartFileToFile(multipartFile);
-			String fileName = generateFileName(multipartFile);
-			fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
-			 uploadFileTos3bucket(bucketName,fileName, file); 
-			 file.delete();
-        System.out.println("File uploaded: " + fileName);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return fileUrl;
+		
+		
+		 String fileUrl = "";
+		 try{
+		 File file =convertMultiPartFileToFile(multipartFile);
+		 String fileName =generateFileName(multipartFile);
+		 fileUrl = endpointUrl + "/" + bucketName + "/" + fileName; 
+		 uploadFileTos3bucket(bucketName,fileName, file);
+		 //s3Client.putObject(bucketName,fileName, file);
+		 file.delete();
+		 System.out.println("File uploaded: " + fileName);
+		 } catch(Exception e){
+		 e.printStackTrace(); 
+		 }
+		 return fileUrl;	
+		   
     }
 
 		public String deleteFile(String bucketName, String fileName) {
@@ -83,6 +95,8 @@ public class StorageService {
         }
         return null;
     }
+    
+    
 
 	public boolean isBucketValid(String bucketName) {		
 		if(s3Client.doesBucketExistV2(bucketName)) {
